@@ -25,12 +25,12 @@ image_resolutionY = yScale/nmPixSize; % resolution for 2D histogram of localisat
 radius = 50; %in pixels
 
 limits = [(0:250:1000)',(2000:250:3000)']; %number of frames: set array of values for each frame
-framecol = 2; % column containing variable to be used for filtering. 
+framecol = 1; % column containing variable to be used for filtering. 
 
 
 %% load in the data
 
-A = load('test.txt'); %select file
+A = load('test_data/488_011.txt'); %select file
 if isstruct(A)
     dataA = A.data;
 else
@@ -41,13 +41,12 @@ end
 idx = dataA(:,framecol) >= limits(1,1) & dataA(:,framecol) <= limits(1,2);
 data = dataA(idx,:);
 
-Xcoord = data(:,3);
-Ycoord = data(:,4);
+Xcoord = data(:,4);
+Ycoord = data(:,5);
 Axy = horzcat(Xcoord,Ycoord).*camPixSize; %if coordinates in nm comment out camPixSize
 Bxy = [];
 
 ii = length(limits);
-frameidx = 1:ii;
 
 % calculate the correlation and the fit
 frame = 1;
@@ -60,13 +59,12 @@ imwrite(uint16(vq1),fname,'tif','compression','lzw')
 %% Loop over to get remaining images
 % for loop over frame index 2 to length of limits: number frames - 1
 
-
 for frameidx = 2:ii;
     idx = dataA(:,framecol) >= limits(frameidx,1) & dataA(:,framecol) <= limits(frameidx,2);
     data = dataA(idx,:);
 
-    Xcoord = data(:,3);
-    Ycoord = data(:,4);
+    Xcoord = data(:,4);
+    Ycoord = data(:,5);
     Axy = horzcat(Xcoord,Ycoord).*camPixSize; %if coordinates in nm comment out camPixSize
     Bxy = [];
 

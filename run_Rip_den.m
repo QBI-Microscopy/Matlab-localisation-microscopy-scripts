@@ -4,7 +4,7 @@ function [corrData,vq,selectedRadius,roicoords] = run_Rip_den(varargin) %(Axy, B
     channel2 = varargin{2};
     resX = varargin{3};
     resY = varargin{4};
-    nmpixSize = varargin{5};
+    nmPixSize = varargin{5};
     range = varargin{6};
     Xrange = [0 range(1)];
     Yrange = [0 range(2)];
@@ -30,23 +30,13 @@ function [corrData,vq,selectedRadius,roicoords] = run_Rip_den(varargin) %(Axy, B
         elseif isempty(t_params{1}) && t_params{2} == 0
             data{1} = channel1;
         elseif isempty(t_params{1}) && t_params{2} == 1
-            [in_points,base_points,~,TFORM] = transformChannels(nmpixSize,density);
+            [in_points,base_points,~,TFORM] = transformChannels(nmPixSize,density);
             data{1} = tformfwd(TFORM,channel1);
         end
         data{2} = channel2;
     end
     
     if frame == 1
-%        %calculate histograms
-%         if ~isempty(channel2)
-%             density(:,:,1) = hist2d(channel1,resX, resY,Xrange,Yrange);
-%             density(:,:,2) = hist2d(channel2,resX, resY,Xrange,Yrange);
-%             density(:,:,3) = zeros(size(density(:,:,1),1),size(density(:,:,1),2));
-%         else
-%             density = hist2d(channel1,resX, resY,Xrange,Yrange);
-%         end    
-
-            %calculate histograms
         if numChannels == 2
             density(:,:,1) = hist2d(data{1},resX, resY,Xrange,Yrange);
             density(:,:,2) = hist2d(data{2},resX, resY,Xrange,Yrange);
@@ -55,28 +45,29 @@ function [corrData,vq,selectedRadius,roicoords] = run_Rip_den(varargin) %(Axy, B
             density = hist2d(data{1},resX, resY,Xrange,Yrange);
         end
 
-        %display for ROI definition
-        figure;hIm = imshow(density,'XData',Xrange,'YData',Yrange); axis equal tight off;
-        %mask = roipoly;
-
-
-        %if isempty(roicoords);
+        figure;hIm = imshow(density,'XData',Xrange,'YData',Yrange,'DisplayRange',[0 1]); axis equal tight off;
         h = imrect;
         roicoords = getPosition(h);
-    end              
-%     else %h = imrect; %(,roicoords); 
-%         roicoords
-%         setPosition(h,roicoords);
-%     end 
-      
-%     mask = createMask(h,hIm);
-%     params = {};
+    end
+    
+    roi_xrange = [roicoords(1) roicoords(1)+roicoords(3)];
+    roi_yrange = [roicoords(2) roicoords(2)+roicoords(4)];
+    roi_xres = ceil((roi_xrange(2) - roi_xrange(1))/nmPixSize);
+    roi_yres = ceil((roi_yrange(2) - roi_yrange(1))/nmPixSize);
+    if numChannels == 2
+        roi_density(:,:,1) = hist2d(data{1},roi_xres, roi_yres,roi_xrange,roi_yrange);
+        roi_density(:,:,2) = hist2d(data{2},roi_xres, roi_yres,roi_xrange,roi_yrange);
+        roi_density(:,:,3) = zeros(size(roi_density(:,:,1),1),size(roi_density(:,:,1),2));
+    else
+        roi_density = hist2d(data{1},roi_xres, roi_yres,roi_xrange,roi_yrange);
+    end
+    
+    fname = sprintf('roi_2dhistogram0%d.tif',frame);
+    imwrite(uint8(roi_density),fname,'tif','compression','lzw')
     corrData = repmat(struct('radius',[],'L',[]),numChannels,1);
-    %L = {};
+
     for ii = 1:numChannels
-        [corrData(ii).L,vq,selectedRadius] = Ripley(roicoords,data{ii},maxrad1*nmpixSize,ripleyradius,frame);
-        %fname = sprintf('clustermap0%d.tif',ii);
-        %imwrite(uint16(vq),fname,'tif','compression','lzw')
+        [corrData(ii).L,vq,selectedRadius] = Ripley(roicoords,data{ii},maxrad1*nmPixSize,ripleyradius,frame);
     end
 
 function [minX, maxX, minY, maxY] = getBounds(data, Xcol, Ycol)
@@ -95,38 +86,21 @@ function [L,vq,distnew] = Ripley(roicoords,data,radius,ripleyradius,frame)
     if frame == 1
         figure;plot(r,L)
         [distnew,~] = ginput(1);
-%         if isempty(ripleyradius);
-%             [distnew,~] = ginput(1);                %crosshairs - remove once radius set
-%         else
-%             distnew = ripleyradius;
-%         end
     else
         distnew = ripleyradius;
     end
-    %[K,l] = RipleysKPerPoint(locs,distnew,box,0);
-    %Lthresh = max(l);
     N = localisation_density(locs,distnew);   
     [ripX,ripY] = meshgrid(range{1},range{2});
     vq = griddata(locs(:,1),locs(:,2),N,ripX,ripY,'v4');     
     if frame == 1
-        figure;scatter(locs(:,1),locs(:,2),20,N);
-
-%         [ripX,ripY] = meshgrid(range{1},range{2});
-%         vq = griddata(locs(:,1),locs(:,2),N,ripX,ripY,'v4');       
+        figure;scatter(locs(:,1),locs(:,2),20,N);      
         figure;imagesc(vq); axis xy
     end
         
     
 function [coords, range, box] = getCoords(roicoords,data)
-%     xyLim = getPosition(h);
-%     xmin = xyLim(1);
-%     ymin = xyLim(2);
-%     width = xyLim(3);
-%     height = xyLim(4);
     xmin = roicoords(1);
     ymin = roicoords(2);
-%     xmax = xmin + width;
-%     ymax = ymin + height;
     xmax = xmin + roicoords(3);
     ymax = ymin + roicoords(4);
     
