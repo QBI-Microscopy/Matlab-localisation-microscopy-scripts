@@ -14,17 +14,10 @@ nmPixSize = 10;
 image_resolutionX = xScale/nmPixSize;
 image_resolutionY = yScale/nmPixSize; % resolution for 2D histogram of localisation data
 
-%camPixSize = 100; %pixel size on ccd in nm
-%originalX = 326; originalY = 282; % image size in pixels
-%image_resolutionX = 3260;   % resolution for 2D histogram of localisation data
-%image_resolutionY = 2820;   % resolution for 2D histogram of localisation data
-%nmPixSizeX = xScale / image_resolutionX;
-%nmPixSizeY = yScale / image_resolutionY;
-%nmPixSize = sqrt(nmPixSizeX^2 + nmPixSizeY^2); 
-
 radius = 50; %in pixels
 
 limits = [(0:250:1000)',(2000:250:3000)']; %number of frames: set array of values for each frame
+% I CHANGED 'framecol' TO 1 FOR MY TEST DATA
 framecol = 1; % column containing variable to be used for filtering. 
 
 
@@ -41,6 +34,7 @@ end
 idx = dataA(:,framecol) >= limits(1,1) & dataA(:,framecol) <= limits(1,2);
 data = dataA(idx,:);
 
+%I CHANGED THE COLUMN NUMBERS HERE FROM (3,4) TO (4,5) FOR MY TEST DATA
 Xcoord = data(:,4);
 Ycoord = data(:,5);
 Axy = horzcat(Xcoord,Ycoord).*camPixSize; %if coordinates in nm comment out camPixSize
@@ -62,7 +56,7 @@ imwrite(uint16(vq1),fname,'tif','compression','lzw')
 for frameidx = 2:ii;
     idx = dataA(:,framecol) >= limits(frameidx,1) & dataA(:,framecol) <= limits(frameidx,2);
     data = dataA(idx,:);
-
+    %I CHANGED THE COLUMN NUMBERS HERE FROM (3,4) TO (4,5) FOR MY TEST DATA
     Xcoord = data(:,4);
     Ycoord = data(:,5);
     Axy = horzcat(Xcoord,Ycoord).*camPixSize; %if coordinates in nm comment out camPixSize
