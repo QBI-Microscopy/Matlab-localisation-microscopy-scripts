@@ -36,33 +36,41 @@ if (nargin<2 || isempty(mask)),    %% draw a mask if needed
 end
 
 %mask = ones(size(I1));
+figure;imshow(I1,[0 max(max(I1))])
 size(mask)
 size(I1)
-N = sum(sum(I1.*mask));  % number of particles within mask
-A = sum(sum(mask));      % area of mask
+N = sum(sum(I1.*mask))  % number of particles within mask
+A = sum(sum(mask))      % area of mask
 I1 = double(I1);         % convert to double
 L1 = size(I1, 1)+rmax; % size of fft2 (for zero padding)
 L2 = size(I1, 2)+rmax; % size of fft2 (for zero padding)
-
 NP = real(fftshift(ifft2(abs(fft2(mask, L1, L2)).^2))); % Normalization for correct boundary conditions
-figure;imshow(NP)
+figure;imshow(NP,[0 max(max(NP))])
 G1 = A^2/N^2*real(fftshift(ifft2(abs(fft2(I1.*mask,L1, L2)).^2)))./NP; % 2D G(r) with proper normalization
 G = imcrop(G1, [floor(L2/2+1)-rmax, floor(L1/2+1)-rmax, 2*rmax, 2*rmax]);  %only return valid part of G
-
-
+disp('bit of G that gets cropped')
+[floor(L2/2+1)-rmax, floor(L1/2+1)-rmax, 2*rmax, 2*rmax]
+figure;imshow(G,[0,max(max(G))])
 xvals = ones(1, 2*rmax+1)'*(-rmax:rmax);    %map to x positions with center x=0
 yvals = (-rmax:rmax)'*ones(1, 2*rmax+1);    %map to y positions with center y=0
 zvals = G;
-
+disp('xvals:')
+xvals
+disp('yvals:')
+yvals
+disp('zvals:')
+zvals
 [theta,r,v] = cart2pol(xvals,yvals, zvals);  % convert x, y to polar coordinates
 
 Ar = reshape(r,1, (2*rmax+1)^2);
 Avals = reshape(v,1, (2*rmax+1)^2);
-[rr,ind] = sort(Ar);                         % sort by r values
-vv = Avals(ind);                             % reindex g
+[rr,ind] = sort(Ar); % sort by r values
+vv = Avals(ind);      % reindex g
+disp('index of max vv:')
+find(vv==max(vv))
 r = 0:floor(max(rr));
-max(rr)% the radii you want to extract
-[n bin] = histc(rr, r-.5);                   % bin by radius
+[n, bin] = histc(rr, r-.5);% bin by radius
+
 for j = 1:rmax+1;                            % now get averages
     
     m = bin==j;

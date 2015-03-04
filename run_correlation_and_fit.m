@@ -2,7 +2,7 @@ function [corrData] = run_correlation_and_fit(varargin) %(input1, input2, Xcol, 
 
     channel1 = varargin{1};
     channel2 = varargin{2};
-    res = varargin{3}
+    res = varargin{3};
     nmpixSize = varargin{4};
     t_params = varargin{5};
     range = varargin{6};
@@ -52,7 +52,7 @@ function [corrData] = run_correlation_and_fit(varargin) %(input1, input2, Xcol, 
     end
     
     %display for ROI definition
-    figure;hIm = imshow(density,'XData',Xrange,'YData',Yrange); axis equal tight off;
+    figure;hIm = imshow(density,[0 1],'XData',Xrange,'YData',Yrange); axis equal tight off;
     %mask = roipoly;
     h = imrect;
     pos = getPosition(h)
@@ -61,11 +61,11 @@ function [corrData] = run_correlation_and_fit(varargin) %(input1, input2, Xcol, 
     params = {};
     corrData = repmat(struct('twoDcorr',[],'radius',[],'correlation',[],'error',[],'mask',[],'type',[],'L',[]),numChannels,1);
     L = {};
-    for ii = 1:numChannels
-        [corrData(ii).L,vq] = Ripley(h,data{ii},maxrad1*nmpixSize);
-        fname = sprintf('clustermap0%d.tif',ii);
-        imwrite(uint16(vq),fname,'tif','compression','lzw')
-    end
+%     for ii = 1:numChannels
+%         [corrData(ii).L,vq] = Ripley(h,data{ii},maxrad1*nmpixSize);
+%         fname = sprintf('clustermap0%d.tif',ii);
+%         imwrite(uint16(vq),fname,'tif','compression','lzw')
+%     end
     % the input parameters for the fit depend on the fit type
     switch fit
         case 'exponential_and_gaussian'
@@ -93,7 +93,7 @@ function [corrData] = run_correlation_and_fit(varargin) %(input1, input2, Xcol, 
                 if Imsize1<1.25*maxrad1
                     maxrad1=round(Imsize1/1.25);
                 end
-                [G, r, g, dg, maskout] = get_autocorr(density(:,:,iChan), mask, maxrad1, 1);
+                [G, r, g, dg, maskout] = get_autocorr(im2bw(density(:,:,iChan)), mask, maxrad1, 1);
                 if isnan(g)
                     errordlg('auto-correlation calculation failed. try changing radius','modal');
                     return

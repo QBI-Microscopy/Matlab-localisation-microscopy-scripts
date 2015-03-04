@@ -1,15 +1,15 @@
 clc, clear all
 
 %% parameters
-sizeX = 500; %region size in arbitrary units
-sizeY = 500;
-density = 1e-3;
+sizeX = 50; %region size in arbitrary units
+sizeY = 50;
+density = 1;
 N = density*sizeX*sizeY; %particle number
-NumRClusters = 25;
+NumRClusters = 1;
 clusterFact = 1; %change the relative number of red and green clusters (vary between 0 -> 1)
 NumGClusters = ceil(clusterFact*NumRClusters);
 NParticlesPerCluster = floor(N/NumRClusters);
-rRadius = 10;
+rRadius = 5;
 radiusFact = 1; %change the relative size of red to green clusters (vary between 0 -> 1)
 gRadius = ceil(radiusFact*rRadius);
 
@@ -29,7 +29,7 @@ end
 green_centers = [];
 for ii = 1: NumGClusters
     [g_x,g_y] = circ_rand(NParticlesPerCluster,gRadius);
-    g_uniform_centers = [(g_x + centers(ii,1)),(g_y + centers(ii,2))];
+    g_uniform_centers = [(g_x + centers(ii,1)),(g_y + centers(ii,2))+10];
     green_centers = [green_centers;g_uniform_centers];
 end
 figure
@@ -44,7 +44,7 @@ r_density_centers = hist2d(red_centers,sizeX, sizeY,[0 sizeX],[0 sizeY]);
 g_density_centers = hist2d(green_centers,sizeX, sizeY,[0 sizeX],[0 sizeY]);
 
 %% calculate the correlation and the fit
-maxrad1 = 200;
+maxrad1 = 40;
 Imsize1=min(size(r_density_centers)); 
 if Imsize1<1.25*maxrad1
     maxrad1=round(Imsize1/1.25);
