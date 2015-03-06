@@ -1,16 +1,9 @@
-function [coords, range, box] = get_coords_in_roi(roicoords,data)
+function [coords, box] = get_coords_in_roi(roicoords,data)
     xmin = roicoords(1);
     ymin = roicoords(2);
     xmax = xmin + roicoords(3);
     ymax = ymin + roicoords(4);
-    
-    dx = 10; %nm
-    dy = 10; %nm
-    Xrange = xmin:dx:xmax;
-    Yrange = ymin:dy:ymax;
-    range = {};
-    range{1} = Xrange;
-    range{2} = Yrange;
+
     XPosition = data(:,1);
     YPosition = data(:,2);
     isROI = XPosition>xmin & XPosition<xmax & YPosition>ymin & YPosition<ymax;

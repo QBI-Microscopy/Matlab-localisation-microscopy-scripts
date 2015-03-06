@@ -31,7 +31,8 @@ else
     A = (box(2)-box(1))*(box(4)-box(3));
 end
 
-DIST = createDistanceMatrix(dataXY,dataXY);
+%DIST = createDistanceMatrix(dataXY,dataXY);
+DIST = pdist2(dataXY,dataXY,'euclidean');
 DIST = sort(DIST);
 
 if method == 0 % no correction...

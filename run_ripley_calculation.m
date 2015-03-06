@@ -1,4 +1,4 @@
-function [corrData,vq,distnew,roi_extent] = run_ripley_calculation(varargin)
+function [corrData,ZI,distnew,roi_extent] = run_ripley_calculation(varargin)
     
     % extract inputs
     channel1 = varargin{1};
@@ -65,7 +65,7 @@ function [corrData,vq,distnew,roi_extent] = run_ripley_calculation(varargin)
     roi_yrange = [roi_extent(2) roi_extent(2)+roi_extent(4)];
     roi_xres = ceil((roi_xrange(2) - roi_xrange(1))/nmPixSize);
     roi_yres = ceil((roi_yrange(2) - roi_yrange(1))/nmPixSize);
-    [roicoords_ch1, ~, ~] = get_coords_in_roi(roi_extent,data{1});
+    [roicoords_ch1, ~] = get_coords_in_roi(roi_extent,data{1});
     if numChannels == 2
         [roicoords_ch2, ~, ~] = get_coords_in_roi(roi_extent,data{2});
         roi_density(:,:,1) = hist2d(roicoords_ch1,roi_xres, roi_yres,roi_xrange,roi_yrange);
@@ -83,7 +83,7 @@ function [corrData,vq,distnew,roi_extent] = run_ripley_calculation(varargin)
     % now do the ripley function calculation
     for ii = 1:numChannels
         % get the localisations within the ROI
-        [locs, range, box] = get_coords_in_roi(roi_extent,data{ii},data);
+        [locs, box] = get_coords_in_roi(roi_extent,data{ii});
         dr = maxrad / 200;
         r = 0:dr:maxrad;
         % calculate k and l functions
@@ -99,12 +99,16 @@ function [corrData,vq,distnew,roi_extent] = run_ripley_calculation(varargin)
             distnew = ripleyradius;
         end
         % now determine the localisation density in the ROI
-        N = localisation_density(locs,distnew);   
-        [ripX,ripY] = meshgrid(range{1},range{2});
-        vq = griddata(locs(:,1),locs(:,2),N,ripX,ripY,'v4');     
+        N = ripleykperpoint(locs,distnew,box,0);
+        pixelsX = ceil((box(2)-box(1))/50);
+        pixelsY = ceil((box(4)-box(3))/50);
+        tx = linspace(box(1),box(2),pixelsX);
+        ty = linspace(box(3),box(4),pixelsY);
+        [XI,YI] = meshgrid(tx,ty);
+        ZI = biharmonic_spline_interp2(locs(:,1),locs(:,2),N,XI,YI);   
         if frame == 1
             figure;scatter(locs(:,1),locs(:,2),20,N);      
-            figure;imagesc(vq); axis xy
+            figure;imagesc(ZI); axis xy
         end
     end
 

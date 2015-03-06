@@ -43,7 +43,8 @@ ii = length(limits);
 
 % calculate the correlation and the fit
 frame = 0;
-% [correlation_data, vq1,ripleyradius,roicoords] = run_Rip_den(Axy, Bxy, image_resolutionX, image_resolutionY, nmPixSize, [xScale yScale], radius,[],[],frame);
+[correlation_data, vq1,ripleyradius,roicoords] = run_ripley_calculation(...
+Axy, Bxy, image_resolutionX, image_resolutionY, nmPixSize, [xScale yScale], radius,[],[],frame);
 
 %fname = sprintf('clustermap0%d.tif',1); %define name here
 %imwrite(uint16(vq1),fname,'tif','compression','lzw')
@@ -55,7 +56,6 @@ frame = 0;
 for frameidx = 1:ii;
     idx = dataA(:,framecol) >= limits(frameidx,1) & dataA(:,framecol) <= limits(frameidx,2);
     data = dataA(idx,:);
-    size(data)
     %I CHANGED THE COLUMN NUMBERS HERE FROM (3,4) TO (4,5) FOR MY TEST DATA
     Xcoord = data(:,3);
     Ycoord = data(:,4);
@@ -67,7 +67,9 @@ for frameidx = 1:ii;
     imwrite(uint8(density),fname,'tif','compression','lzw')
 
     % calculate the correlation and the fit
-%     [correlation_data, vq,~,~] = run_Rip_den(Axy, Bxy, image_resolutionX, image_resolutionY, nmPixSize, [xScale yScale], radius,ripleyradius,roicoords,frameidx);
+    [correlation_data, vq,~,~] = run_ripley_calculation(...
+        Axy, Bxy, image_resolutionX, image_resolutionY, nmPixSize,...
+        [xScale yScale], radius,ripleyradius,roicoords,frameidx);
     
 %     fname = sprintf('clustermap0%d.tif',frameidx);
 %     imwrite(uint16(vq),fname,'tif','compression','lzw')
