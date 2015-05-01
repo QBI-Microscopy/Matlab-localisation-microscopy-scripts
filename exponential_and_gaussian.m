@@ -1,0 +1,1 @@
+function y = exponential_and_gaussian(P, r)xi = P(1);A = P(2);s = P(3);rho = P(4)*1e-6;if length(P)<5, C = 0; else C = P(5); endA2 = 1/2/pi/s^2/rho;y = A2*exp(-r.^2/2/s^2) + A*exp(-r/xi)+C;
