@@ -36,10 +36,11 @@ DIST = pdist2(dataXY,dataXY,'euclidean');
 DIST = sort(DIST);
 
 if method == 0 % no correction...
+    K = zeros(length(xK),1);
     L = zeros(length(xK),1);
     for k=1:length(xK)
-        K = A*sum(sum(DIST(2:end,:)<xK(k)))/N^2;
-        L(k) = sqrt(K/pi) - xK(k);
+        K(k) = A*sum(sum(DIST(2:end,:)<xK(k)))/N^2;
+        L(k) = sqrt(K(k)/pi) - xK(k);
     end    
 elseif method == 1 % edge correction
     L = zeros(length(xK),1);

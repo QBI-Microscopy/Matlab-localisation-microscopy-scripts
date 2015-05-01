@@ -71,8 +71,8 @@ for frameidx = 1:ii;
         Axy, Bxy, image_resolutionX, image_resolutionY, nmPixSize,...
         [xScale yScale], radius,ripleyradius,roicoords,frameidx);
     
-%     fname = sprintf('clustermap0%d.tif',frameidx);
-%     imwrite(uint16(vq),fname,'tif','compression','lzw')
+    fname = sprintf('clustermap0%d.tif',frameidx);
+    imwrite(uint16(vq),fname,'tif','compression','lzw')
     
 end    
 disp('finished!')

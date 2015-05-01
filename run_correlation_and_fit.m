@@ -49,15 +49,24 @@ function [corrData] = run_correlation_and_fit(varargin) %(input1, input2, Xcol, 
         density(:,:,3) = zeros(size(density(:,:,1),1),size(density(:,:,1),2));
     else
         density = hist2d(data{1},res(1), res(2),Xrange,Yrange);
+        cmax = 5;
+        cmin = min(min(density));
     end
     
     %display for ROI definition
-    figure;hIm = imshow(density,[0 1],'XData',Xrange,'YData',Yrange); axis equal tight off;
+    LUT = RedMap;
+    r = LUT(:,2);
+    g = LUT(:,1);
+    b = LUT(:,3);
+    k = 1:numel(r);
+    map(k,:)=[r(k) g(k) b(k)];
+    figure;hIm = imagesc(Xrange,Yrange,density,[cmin,cmax]); axis equal tight off; colormap(map)
     %mask = roipoly;
     h = imrect;
     pos = getPosition(h)
     mask = createMask(h,hIm);
-    figure;imshow(mask)
+    figure;imagesc(mask);axis equal tight off;colormap('gray')
+    figure;imagesc(density.*mask,[cmin,cmax]);axis equal tight off; colormap(map)
     params = {};
     corrData = repmat(struct('twoDcorr',[],'radius',[],'correlation',[],'error',[],'mask',[],'type',[],'L',[]),numChannels,1);
     L = {};

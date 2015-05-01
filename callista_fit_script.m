@@ -6,13 +6,13 @@ close all
 %% load in the data
 
 headerLines = 1; %the number of lines in the header
-numCols = 13;
-dataA = readLocalisations('/Users/uqdmatt2/Desktop/nrxn_01.txt',headerLines,numCols);
+numCols = 12;
+dataA = read_localisations('test_data/488_011.txt',headerLines,numCols);
 %dataB = readLocalisations('010.txt',headerLines,numCols);
 dataB = [];
 % assign the column numbers for the x and y coordinates
-Xcol = 5;
-Ycol = 6; %the two input files must have the same column configuration
+Xcol = 4;
+Ycol = 5; %the two input files must have the same column configuration
 
 %% Filter the localisations
 %rule = 1: precision or intensity
@@ -25,14 +25,14 @@ Ycol = 6; %the two input files must have the same column configuration
 %     dataB = filter_localisations(dataB,dataCol,rule,limits);
 % end
 %% set some variables:
-camPixSize = 100; %pixel size on ccd in nm
-originalX = 256; originalY = 256; % image size in pixels
+camPixSize = 95; %pixel size on ccd in nm
+originalX = 180; originalY = 180; % image size in pixels
 xScale = originalX .* camPixSize;
 yScale = originalY .* camPixSize;
 % nmPixSizeX = xScale / image_resolution;
 % nmPixSizeY = yScale / image_resolution;
 %nmPixSize = sqrt(nmPixSizeX^2 + nmPixSizeY^2); % pixel size in 2D histogram
-nmPixSize = 10;
+nmPixSize = 25;
 image_resolution = [xScale/nmPixSize, yScale/nmPixSize]; % resolution for 2D histogram of localisation data
 image_resolution(1)
 %% apply channel alignment?
@@ -42,16 +42,16 @@ t_params = {transformation, calc_new};
 
 %% set the type of correlation and the function to fit to the data
 correlation = 'auto'; %'auto' for auto-correlation, 'cross' for cross-correlation
-fit = 'exponential'; %name should match available fit functions
-radius = 50; %in pixels
+fit = 'exponential_and_gaussian'; %name should match available fit functions
+radius = 80; %in pixels
 
 %% extract the (possibly filtered) x-y coordinates
 % this step converts the coordinates pixels to nm; remove multiplication by
 % camPixSize to work with data already in nm
 Ax = dataA(:,Xcol);
 Ay = dataA(:,Ycol);
-% Axy = [Ax Ay].*camPixSize;
-Axy = [Ax Ay];
+Axy = [Ax Ay].*camPixSize;
+% Axy = [Ax Ay];
 if ~isempty(dataB)
     Bx = dataB(:,Xcol);
     By = dataB(:,Ycol);

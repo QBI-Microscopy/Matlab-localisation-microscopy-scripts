@@ -1,4 +1,4 @@
-function data = readLocalisations(filename,header,numCols)
+function data = read_localisations(filename,header,numCols,delimiter)
         
     if ~isempty(header)
         try
@@ -8,7 +8,7 @@ function data = readLocalisations(filename,header,numCols)
             end
             
             fid = fopen(filename, 'rt');
-            data = textscan(fid, format, 'headerLines', header, 'CollectOutput', true);
+            data = textscan(fid, format, 'HeaderLines', header, 'CollectOutput', true, 'Delimiter',delimiter);
             fclose(fid);
             data = cell2mat( data);
         catch err %#ok, unused arguments
