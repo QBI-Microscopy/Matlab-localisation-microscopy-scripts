@@ -22,7 +22,7 @@ if run_batch
     end
 else
     num_files = 1;
-    fnames{1} = '/Users/uqdmatt2/Desktop/Coords_ROI0_Time0_Channel0.csv';
+    fnames{1} = '/Users/uqdmatt2/Documents/Programming/QBI-Microscopy/cluster_analysis/data/Coords_ROI0_Time0_Channel0.csv';
 end
 
 % run the batch
