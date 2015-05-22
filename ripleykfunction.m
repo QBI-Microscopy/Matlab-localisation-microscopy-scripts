@@ -1,89 +1,82 @@
- 
-% This script assumes that you have already segemented a region of interest
-% from a localisation microscopy dataset and you have a file containing
-% the XY coords from that region of interest
-% DO NOT USE THIS ON A COMPLETE DATASET UNLESS YOU HAVE A SUPER COMPUTER! 
-% Last update on 010515 by Daniel Matthews
+function [K,L] = ripleykfunction(dataXY,xK,box,method)
+% KFUNCTION calculates Ripleys K function
+% K = kfunction(dataXY,xK,box,method) - returns vector K containing value
+% of Ripley's K-function of dataXY in the distances in xK.
+% dataXY - N-by-2 vector where N is number of datapoints. Each row
+% corresponds to x and y coordinates of each datapoint
+% xK - corresponds to the distances where K function should be computed.
+% K is the same size as xK...
+% box - rectangular boudnary of the data: box = [xlim1, xlim2, ylim1,
+% ylim2]
+% method - switch between edge correction. If method=0, no edge correction
+% is applied. If method=1, datapoint is used for estimation of K(h) only if
+% it is at least h units away from the box
 
 
-clc; clear all
+if nargin<4 method=1; end
+[N,k] = size(dataXY);
+if k~=2 error('dataXY must have two columns'); end
 
-% set up
-delimiter = {','}; % for csv data
-run_batch = false;
-fnames = {};
-if run_batch 
-    path = '/Users/uqdmatt2/Desktop/';
-    ext = 'csv';
-    files = dir(path+'*.'+ext);
-    num_files = numel(files);
-    for i = 1: num_files
-        fnames{i} = path + files(i).name
+if size(box,1) > 1
+    rbox = zeros(N,1);
+    for i = 1: N            
+        rbox(i) = abs(p_poly_dist(dataXY(i,1),dataXY(i,2), box(:,1),box(:,2)));
     end
+    A = polyarea(box(:,1),box(:,2));
 else
-    num_files = 1;
-    fnames{1} = 'Coords_ROI0_Time0_Channel0.csv';
+    rbox = min([ dataXY(:,1)'-box(1);
+                    box(2)-dataXY(:,1)';
+                    dataXY(:,2)'-box(3);
+                    box(4)-dataXY(:,2)']);
+    A = (box(2)-box(1))*(box(4)-box(3));
 end
 
-% run the batch
-outputdata = repmat(struct('radius',[],'ripleyK',[],'ripleyL',[]),num_files,1);
-for f = 1: num_files
-    
-    % read the ROI data
-    fnames(f)
-    table = read_localisations(fnames{f},1,3,delimiter);
+%DIST = createDistanceMatrix(dataXY,dataXY);
+DIST = pdist2(dataXY,dataXY,'euclidean');
+DIST = sort(DIST);
 
-    if isstruct(table)
-        data = table.data;
-    else
-        data = table;
-    end
-
-    xcol = 1; % index of column holding x coords
-    ycol = 2; % index of column holding y coords
-    fcol = 3; % index of column holding first frame number
-
-    %number of frames: set array of values for each frame
-    %set limits to '[]' if not required
-    %limits = [(1:4000:12001)',(4000:4000:16000)']; 
-    %limits = [(1:250:13001)',(3000:250:16000)'];
-    limits = [];
-    convert = false; % do you need to convert the XY coords to nm?
-    camPix = 100; %nm
-    coords = horzcat(data(:,xcol),data(:,ycol));
-    if convert
-        coords = horzcat(data(:,xcol),data(:,ycol)).*camPix;
-    end
-
-    % parameters for calculation
-    % max radius for Ripley calculation in nm
-    maxrad = 1000; 
-    dr = 100; % step in nm
-    r = 1:dr:maxrad; % distance scale array
-
-    % bounding box
-    xmin = min(coords(:,1));
-    ymin = min(coords(:,2));
-    xmax = max(coords(:,1));
-    ymax = max(coords(:,2));
-    box = [xmin, xmax, ymin, ymax];
-
-    % the calculation
-    if limits %#ok
-        % a holder for the ripley data
-        Kdata = zeros(length(r),length(limits));
-        Ldata = zeros(length(r),length(limits));
-        for frameidx = 1:length(limits);
-            idx = data(:,fcol) >= limits(frameidx,1) & data(:,fcol) <= limits(frameidx,2);
-            coords2use = coords(idx,:);
-            [K,L] = ripleykfunction(coords2use,r,box,0);
-            Kdata(:,frameidx) = K;
-            Ldata(:,frameidx) = L;
+if method == 0 % no correction...
+    K = zeros(length(xK),1);
+    L = zeros(length(xK),1);
+    for k=1:length(xK)
+        K(k) = A*sum(sum(DIST(2:end,:)<xK(k)))/N^2;
+        L(k) = sqrt(K(k)/pi) - xK(k);
+    end    
+elseif method == 1 % edge correction
+    L = zeros(length(xK),1);
+    Nk = length(xK);
+    for k=1:Nk
+        I = find(rbox>xK(k));
+        if ~isempty(I)
+            K = A*sum(sum(DIST(2:end,I)<xK(k)))/(length(I)*N);
+            L(k) = sqrt(K/pi) - xK(k);
         end
-    else
-        [Kdata,Ldata] = ripleykfunction(coords,r,box,0);
     end
-    outputdata(f).radius = r;
-    outputdata(f).ripleyK = Kdata;
-    outputdata(f).ripleyL = Ldata;
+elseif method == 2 % global edge correction
+    W = box(2)-box(1);
+    H = box(4)-box(3);
+    edge  = 1 - (4/3/pi).*(xK./H + xK./W) + (11/3/pi - 1).*(xK.^2./H./W);
+    L = zeros(length(xK),1);
+    Nk = length(xK);
+    for k=1:Nk
+        K = A*sum(sum(DIST(2:end,:)<xK(k)))/N^2/edge(k);
+        L(k) = sqrt(K/pi) - xK(k);
+    end 
+    
+elseif method == 3
+    weight = ones(size(DIST));
+    for ii = 2: N
+        for jj = 1: N
+            if DIST(ii,jj) > rbox(ii)
+                weight(ii,jj) = 1 - (acos(rbox(ii) / DIST(ii,jj))) / pi;
+            end
+        end
+    end
+    L = zeros(length(xK),1);
+    K = zeros(length(xK),1);
+    Nk = length(xK);
+    for k=1:Nk
+        K(k) = A*sum(sum((DIST(2:end,:)<xK(k))./weight(2:end,:)))/(N*(N - 1));
+        L(k) = sqrt(K(k)/pi) - xK(k);
+    end 
 end

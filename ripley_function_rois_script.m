@@ -22,7 +22,7 @@ if run_batch
     end
 else
     num_files = 1;
-    fnames{1} = '/Users/uqdmatt2/Documents/Programming/QBI-Microscopy/cluster_analysis/data/Coords_ROI0_Time0_Channel0.csv';
+    fnames{1} = 'Coords_ROI0_Time0_Channel0.csv';
 end
 
 % run the batch
@@ -46,8 +46,8 @@ for f = 1: num_files
     %number of frames: set array of values for each frame
     %set limits to '[]' if not required
     %limits = [(1:4000:12001)',(4000:4000:16000)']; 
+    %limits = [(1:250:13001)',(3000:250:16000)'];
     limits = [];
-
     convert = false; % do you need to convert the XY coords to nm?
     camPix = 100; %nm
     coords = horzcat(data(:,xcol),data(:,ycol));
@@ -58,7 +58,7 @@ for f = 1: num_files
     % parameters for calculation
     % max radius for Ripley calculation in nm
     maxrad = 1000; 
-    dr = 10; % step in nm
+    dr = 100; % step in nm
     r = 1:dr:maxrad; % distance scale array
 
     % bounding box
@@ -75,10 +75,10 @@ for f = 1: num_files
         Ldata = zeros(length(r),length(limits));
         for frameidx = 1:length(limits);
             idx = data(:,fcol) >= limits(frameidx,1) & data(:,fcol) <= limits(frameidx,2);
-            coords = coords(idx,:);
-            [K,L] = ripleykfunction(coords,r,box,0);
-            Kdata(:,idx) = K;
-            Ldata(:,idx) = L;
+            coords2use = coords(idx,:);
+            [K,L] = ripleykfunction(coords2use,r,box,0);
+            Kdata(:,frameidx) = K;
+            Ldata(:,frameidx) = L;
         end
     else
         [Kdata,Ldata] = ripleykfunction(coords,r,box,0);
