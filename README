@@ -1,0 +1,39 @@
+To use this collection add all folders to the path (in MATLAB)
+
+The repo is organised as follows:
+
+1. scripts
+
+pair_correlation_script.m - a script which calculates pair correlation functions (either auto- or 
+cross-correlation) on tabulated XY super resolved coordinates. It creates a reconstructed image on
+which the user defines a region of interest and then calculates the correlation function and fits the
+data to a model selected by the user (calls worker_functions/run_correlation_and_fit.m and
+utilities/get_autocorr.m or utilities/get_crosscorr.m).
+
+ripley_function_omero_script.m - this script is used to connect to OMERO and downloads XY coordinates
+extracted from regions of interest and annotated to a reconstructed super resolved image. This requires
+the OMERO MATLAB toolbox to function (https://downloads.openmicroscopy.org/omero/5.1.0/). When the
+download completes the ripley function is calculated (calls worker_functions/run_ripley_calculation.m and
+utilities/ripleykfunction.m)
+
+ripley_function_rois_script.m - a script which calculates the ripley function on XY molecular coordinates
+in ROIs which have been defined in a reconstructed super resolution image in OMERO. First draw ROIs using
+in Insight and run the Get_Coordinates_In_ROIs.py script. Download the resultant data to a local folder
+and use this folder as an input to this script to calculate the ripley function in each region (calls
+worker_functions/run_ripley_calculation.m and utilities/ripleykfunction.m
+
+ripley_function_script.m - a script to calculate ripley's functions on tabulated XY molecular coordinates.
+The script recontructs an image from the input data allowing a user to define a region of interest. After
+the calculation finishes the user is prompted to mark the peak position on the ripley function data and
+subsequently the calculation runs again at this single distance scale producing interpolated images of the
+value of the ripley L function at XY coordinate (calls worker_functions/run_ripley_calculation.m and
+utilities/ripleykfunction.m)
+
+2. simulations
+simulations of pair correlation and ripley function data
+
+3. utilities
+utility functions used by scripts and worker_functions
+
+4. worker_functions
+called from scripts (scripts are purely for providing inputs to the worker_functions)
