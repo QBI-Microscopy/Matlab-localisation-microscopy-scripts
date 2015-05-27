@@ -12,16 +12,18 @@ clc; clear all
 delimiter = {','}; % for csv data
 run_batch = false;
 fnames = {};
-if run_batch 
+if run_batch
+    % set path to folder with kymograph tiffs
     path = '/Users/uqdmatt2/Desktop/';
     ext = 'csv';
-    files = dir(path+'*.'+ext);
+    files = dir(strcat(path,'*.',ext));
     num_files = numel(files);
     for i = 1: num_files
-        fnames{i} = path + files(i).name
+        fnames{i} = strcat(path,files(i).name);
     end
 else
     num_files = 1;
+    % set the filename (or absolute path) to kymograph
     fnames{1} = 'Coords_ROI0_Time0_Channel0.csv';
 end
 
