@@ -1,0 +1,21 @@
+function [x,y] = circ_rand(n,R)
+%n = 1000; % Select how many random points you want to generate
+a = 0;
+b = pi;
+%R = 25;
+p = (2*a-sin(2*a))+(2*b-sin(2*b)-2*a+sin(2*a))*rand(n,1);
+p = mod(p+pi,2*pi)-pi;
+p = sign(p).*abs(p).^(1/3);
+c1 = 1/(6^(1/3)); % c1 and c2 used in approx. of derivative
+c2 = (c1-2/3/pi^(2/3))/pi^2;
+t = zeros(n,1);
+for k = 1:12 % Twelve trips should suffice for convergence
+    p1 = t-sin(t);
+    p1 = sign(p1).*abs(p1).^(1/3);
+    t = t - (p1-p)./(c1-c2*t.^2); % Pseudo Newton Raphson
+end
+t = mod(t,2*pi)/2;
+s = -1+2*rand(n,1);
+x = R*cos(t); % x and y are cartesian coordinates of the random points
+y = R*s.*sin(t);
+centers = [x,y];
